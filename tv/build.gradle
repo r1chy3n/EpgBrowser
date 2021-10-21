@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+apply from: 'signing.gradle'
+
+android {
+    signingConfigs {
+        config_AmazetvPlatform {
+            storeFile file(project.AmazetvPlatformKey.storeFilePath)
+            storePassword project.AmazetvPlatformKey.storePassword
+            keyAlias project.AmazetvPlatformKey.keyAlias
+            keyPassword project.AmazetvPlatformKey.keyPassword
+        }
+    }
+
+    compileSdk 31
+
+    defaultConfig {
+        applicationId "com.javahand.epgbrowser"
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.config_AmazetvPlatform
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+}
