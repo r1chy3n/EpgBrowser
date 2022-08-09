@@ -2,6 +2,7 @@ package com.javahand.epgbrowser
 
 import android.media.tv.TvContract
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +16,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : FragmentActivity()
-{
+{ // class MainActivity
     private val programAdapter = ProgramAdapter()
 
     private lateinit var channelList: List<Channel>
@@ -24,6 +25,26 @@ class MainActivity : FragmentActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        findViewById<TextView>( R.id
+            .textMainLongDescription ).setOnKeyListener { _, _, _ ->
+
+            findViewById<TextView>( R.id
+                .textMainLongDescription ).visibility = View.GONE
+
+            true
+        }
+
+        programAdapter.selectedLongDescription.observe( this ) {
+
+            val textLongDescriptor
+            = findViewById<TextView>( R.id.textMainLongDescription )
+
+            textLongDescriptor.text = it
+            textLongDescriptor.visibility = View.VISIBLE
+
+            textLongDescriptor.requestFocus()
+        } // observe
 
         channelList = getChannelList()
 
@@ -54,10 +75,12 @@ class MainActivity : FragmentActivity()
         recyclerCh.requestFocus()
     } // fun onCreate( Bundle?)
 
-    private fun updateProgramList( channel: Channel )
+    private fun updateProgramList(channel: Channel )
     {
+        // 今天時間
         val calendar = Calendar.getInstance()
 
+        // 今天凌晨零點零分
         calendar.set( Calendar.MILLISECOND, 0 )
         calendar.set( Calendar.SECOND, 0 )
         calendar.set( Calendar.MINUTE, 0 )
@@ -65,6 +88,7 @@ class MainActivity : FragmentActivity()
 
         val startMillis = calendar.timeInMillis
 
+        // 七天後
         calendar.add( Calendar.HOUR, 24 * 7 )
 
         val endMillis = calendar.timeInMillis
@@ -80,27 +104,70 @@ class MainActivity : FragmentActivity()
             var title: String
             var startTimeUtcMillis: Long
             var endTimeUtcMillis: Long
+            var longDescription: String?
             var program: Program
 
             while ( cursor.moveToNext() && !cursor.isAfterLast )
             {
                 id = cursor.getLong( ProgramColumn.ID )
                 title = cursor.getString( ProgramColumn.TITLE )
-                startTimeUtcMillis = cursor.getLong(
-                    ProgramColumn.START_TIME_UTC_MILLIS )
-                endTimeUtcMillis = cursor.getLong(
-                    ProgramColumn.END_TIME_UTC_MILLIS )
+                startTimeUtcMillis = cursor
+                    .getLong( ProgramColumn.START_TIME_UTC_MILLIS )
+                endTimeUtcMillis = cursor
+                    .getLong( ProgramColumn.END_TIME_UTC_MILLIS )
+                longDescription = cursor
+                    .getString( ProgramColumn.LONG_DESCRIPTION )
                 program = Program( id, title,
-                    startTimeUtcMillis, endTimeUtcMillis )
+                    startTimeUtcMillis, endTimeUtcMillis, longDescription )
 
                 programList.add( program )
             } // while
         } // cursor
 
+        if (programList.isNotEmpty())
+        {
+            checkProgram(programList, startMillis )
+        } // if
+
         programAdapter.setProgramList( programList )
+
         val recyclerProgram = findViewById<RecyclerView>( R.id.recycler_pg )
+
         recyclerProgram.scrollToPosition( 0 )
     } // fun updateProgramList( Channel )
+
+    private fun checkProgram( pgList: ArrayList<Program>, startMillis: Long )
+    {
+        var prevPg = pgList.first()
+        var count = 0
+
+        if ( startMillis < prevPg.startTimeUtcMillis )
+        {
+            val noDataPg = Program( -1,
+                "* 無資料", startMillis, prevPg.startTimeUtcMillis )
+
+            pgList.add( 0, noDataPg )
+
+            prevPg = noDataPg
+        } // if
+
+        for ( i in 1 until pgList.size)
+        {
+
+
+            if ( prevPg.endTimeUtcMillis != pgList[ i ].startTimeUtcMillis )
+            {
+                prevPg.title = "* " + prevPg.title
+                pgList[ i ].title = "* " + pgList[ i ].title
+                count += 2
+            } // if
+
+            prevPg = pgList[ i ]
+        } // for
+
+        findViewById<TextView>( R.id
+            .text_problem_count ).text = count.toString()
+    } // Method checkProgram( ArrayList<Program>, Long, Long )
 
     private fun getChannelList(): List<Channel>
     {
@@ -139,4 +206,4 @@ class MainActivity : FragmentActivity()
 
         return channelList
     } // fun getChannelMap()
-} // class MainActivity
+}

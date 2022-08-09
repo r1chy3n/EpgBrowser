@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="tv/src/main/res/drawable/ic_banner_foreground.xml" value="0.13" />
         <entry key="tv/src/main/res/drawable/ic_baseline_check_box_24.xml" value="0.1953125" />
         <entry key="tv/src/main/res/layout/activity_main.xml" value="0.17916666666666667" />
         <entry key="tv/src/main/res/layout/item_channel.xml" value="0.3170289855072464" />

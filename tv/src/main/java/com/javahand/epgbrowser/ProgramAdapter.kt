@@ -1,9 +1,12 @@
 package com.javahand.epgbrowser
 
+import android.annotation.SuppressLint
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.javahand.epgbrowser.provider.Program
 import java.util.*
@@ -11,6 +14,8 @@ import kotlin.collections.ArrayList
 
 class ProgramAdapter : RecyclerView.Adapter<ProgramAdapter.ProgramViewHolder>()
 {
+    var selectedLongDescription = MutableLiveData( "" )
+
     private var programList = ArrayList<Program>()
 
     override fun onCreateViewHolder( parent: ViewGroup,
@@ -30,7 +35,8 @@ class ProgramAdapter : RecyclerView.Adapter<ProgramAdapter.ProgramViewHolder>()
 
     override fun getItemCount() = programList.size
 
-    class ProgramViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    inner class ProgramViewHolder(itemView: View)
+        : RecyclerView.ViewHolder(itemView)
     {
         private val textId = itemView
             .findViewById<TextView>( R.id.textProgramId )
@@ -38,6 +44,8 @@ class ProgramAdapter : RecyclerView.Adapter<ProgramAdapter.ProgramViewHolder>()
             .findViewById<TextView>( R.id.textProgramTitle )
         private val textSchedule = itemView
             .findViewById<TextView>( R.id.textProgramSchedule )
+        private val textLongDescription = itemView
+            .findViewById<TextView>( R.id.textProgramLongDescription )
 
         fun bind( program: Program )
         {
@@ -48,10 +56,27 @@ class ProgramAdapter : RecyclerView.Adapter<ProgramAdapter.ProgramViewHolder>()
             textTitle.text = program.title
             textSchedule.text = itemView.context.getString(
                 R.string.format_program_schedule, startDate, endDate )
+
+            if ( TextUtils.isEmpty( program.longDescription ))
+            {
+                textLongDescription.visibility = View.INVISIBLE
+
+                itemView.setOnClickListener( null )
+            }
+            else
+            {
+                textLongDescription.visibility = View.VISIBLE
+
+                itemView.setOnClickListener {
+
+                    selectedLongDescription.value = program.longDescription
+                } // linearItem.setOnClickListener
+            } // if - else
         } // fun bind( Program )
     } // class ProgramViewHolder
 
-    fun setProgramList( pgList: ArrayList<Program>)
+    @SuppressLint("NotifyDataSetChanged")
+    fun setProgramList(pgList: ArrayList<Program>)
     {
         programList = pgList
 

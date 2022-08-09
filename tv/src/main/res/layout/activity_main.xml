@@ -10,12 +10,13 @@
     >
 
     <LinearLayout
-        android:id="@+id/linearChannel"
+        android:id="@+id/linear_channel"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_marginEnd="18dp"
+        app:layout_constraintHorizontal_weight="3"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/recycler_pg"
+        app:layout_constraintRight_toLeftOf="@id/linear_program"
         android:orientation="vertical"
         >
 
@@ -39,11 +40,47 @@
             />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_pg"
+    <LinearLayout
+        android:id="@+id/linear_program"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        app:layout_constraintLeft_toRightOf="@id/linearChannel"
+        android:orientation="vertical"
+        app:layout_constraintHorizontal_weight="4"
+        app:layout_constraintLeft_toRightOf="@id/linear_channel"
         app:layout_constraintRight_toRightOf="parent"
+        >
+
+        <TextView
+            android:id="@+id/text_problem_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="#FF6666"
+            android:textSize="16sp"
+            tools:ignore="HardcodedText"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_pg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:nextFocusRight="@id/recycler_pg"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textMainLongDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#000000"
+        android:focusable="true"
+        android:lines="10"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>
