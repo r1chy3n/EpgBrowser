@@ -13,7 +13,7 @@ object ChannelColumn
         TvContract.Channels.COLUMN_DISPLAY_NAME,    // 3
         TvContract.Channels.COLUMN_DISPLAY_NUMBER,  // 4
         TvContract.Channels.COLUMN_INPUT_ID,        // 5
-        TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA,  // 06
+        TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA,  // 06, BLOB
         TvContract.Channels.COLUMN_NETWORK_AFFILIATION,     // 07
         TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID,     // 08
         TvContract.Channels.COLUMN_PACKAGE_NAME,            // 09
@@ -38,7 +38,7 @@ object ChannelColumn
         TvContract.Channels.COLUMN_BROWSABLE,               // 26
         TvContract.Channels.COLUMN_INTERNAL_PROVIDER_ID,    // 27
         TvContract.Channels.COLUMN_LOCKED,                  // 28
-        TvContract.Channels.COLUMN_TRANSIENT               // 29
+        TvContract.Channels.COLUMN_TRANSIENT                // 29
         // #30
 //        TvContract.Channels.COLUMN_GLOBAL_CONTENT_ID
         // #31
