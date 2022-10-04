@@ -2,6 +2,7 @@ package com.javahand.epgbrowser
 
 import android.media.tv.TvContract
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.core.database.getBlobOrNull
@@ -68,6 +69,8 @@ class MainActivity : FragmentActivity()
         recyclerCh.adapter = channelAdapter
 
         channelAdapter.selectedIndex.observe( this ) {
+
+            Log.i( "EpgBrowser", channelList[ it ].toString())
 
             updateProgramList( channelList[ it ])
 
