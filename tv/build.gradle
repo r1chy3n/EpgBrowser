@@ -15,12 +15,12 @@ android {
         }
     }
 
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.javahand.epgbrowser"
-        minSdk 21
-        targetSdk 31
+        minSdk 26
+        targetSdk 33    // Android 10 = level 29
         versionCode 4
         versionName "2.2"
 
