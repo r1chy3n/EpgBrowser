@@ -21,10 +21,14 @@ class MainActivity : FragmentActivity()
 
     private lateinit var channelList: List<Channel>
 
+    private var focusedPgItem: View? = null
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val recyclerPg = findViewById<RecyclerView>( R.id.recycler_pg )
 
         findViewById<TextView>( R.id
             .textMainLongDescription ).setOnKeyListener { _, _, _ ->
@@ -32,10 +36,16 @@ class MainActivity : FragmentActivity()
             findViewById<TextView>( R.id
                 .textMainLongDescription ).visibility = View.GONE
 
+            findViewById<RecyclerView>( R.id.recycler_pg ).requestFocus()
+
+            focusedPgItem?.requestFocus()
+
             true
         }
 
         programAdapter.selectedLongDescription.observe( this ) {
+
+            focusedPgItem = recyclerPg.focusedChild
 
             val textLongDescriptor
             = findViewById<TextView>( R.id.textMainLongDescription )
@@ -67,7 +77,6 @@ class MainActivity : FragmentActivity()
                 channelList[ it ].displayNumber, channelList[ it ].displayName )
         } // channelAdapter.selectedIndex.observe
 
-        val recyclerPg = findViewById<RecyclerView>( R.id.recycler_pg )
 
         recyclerPg.layoutManager = LinearLayoutManager( this )
         recyclerPg.adapter = programAdapter
@@ -181,15 +190,19 @@ class MainActivity : FragmentActivity()
 
             var id: Long
             var displayName: String
+            var displayNumber: String
             var channel: Channel
 
             while ( cursor.moveToNext() && !cursor.isAfterLast )
             {
-                // 頻道號碼有可能為空
-                cursor.getString(
-                    ChannelColumn.DISPLAY_NUMBER )?.let { displayNumber ->
+                // 頻道號碼 與 頻道名稱 皆有可能為空
+                if ( !cursor.isNull( ChannelColumn.DISPLAY_NAME )
+                    && !cursor.isNull( ChannelColumn.DISPLAY_NUMBER ))
+                {
+                    displayNumber = cursor
+                        .getString( ChannelColumn.DISPLAY_NUMBER )
 
-                    if (displayNumber != "1-1" && displayNumber.length < 4 )
+                    if ( displayNumber != "1-1" && displayNumber.length < 4 )
                     {
                         id = cursor.getLong(ChannelColumn.ID)
                         displayName = cursor
@@ -198,7 +211,7 @@ class MainActivity : FragmentActivity()
 
                         channelList.add( channel )
                     } // if
-                } // cursor.getString( ....DISPLAY_NUMBER )?.let
+                } // if
             } // while
         } // contentResolver.query( ...Channels..., ... ).use
 
