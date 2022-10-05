@@ -2,6 +2,7 @@ package com.javahand.epgbrowser
 
 import android.media.tv.TvContract
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -11,16 +12,19 @@ import androidx.core.database.getStringOrNull
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 
 import com.javahand.epgbrowser.provider.Channel
 import com.javahand.epgbrowser.provider.ChannelColumn
 import com.javahand.epgbrowser.provider.Program
 import com.javahand.epgbrowser.provider.ProgramColumn
+import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : FragmentActivity()
-{ // class MainActivity
+{
     private val programAdapter = ProgramAdapter()
 
     private lateinit var channelList: List<Channel>
@@ -201,11 +205,11 @@ class MainActivity : FragmentActivity()
             var displayName: String?    // 3
             var displayNumber: String?  // 4
             var inputId: String         // 5
-            var internalProviderData: Boolean   // 6
+            var internalProviderData: String    // 6
             var networkAffiliation: String?     // 7
             var originalNetworkId: Int?         // 8
             var packageName: String             // 9
-            var searchable: Boolean             // 10
+            var searchable: Int                 // 10
             var serviceId: Int?                 // 11
             var serviceType: String             // 12
             var transportStreamId: Int?         // 13
@@ -223,10 +227,10 @@ class MainActivity : FragmentActivity()
             var internalProviderFlag3: Int      // 24
             var internalProviderFlag4: Int      // 25
             // #26
-            var browsable: Boolean              // 26
+            var browsable: Int                  // 26
             var internalProviderId: String?     // 27
-            var locked: Boolean                 // 28
-            var transient: Boolean              // 29
+            var locked: Int                     // 28
+            var transient: Int                  // 29
 
             var channel: Channel
 
@@ -240,21 +244,23 @@ class MainActivity : FragmentActivity()
                 displayNumber = cursor.getStringOrNull(
                     ChannelColumn.DISPLAY_NUMBER )      // 4
                 inputId = cursor.getString( ChannelColumn.INPUT_ID )    // 5
-                internalProviderData = cursor.getBlobOrNull(
-                    ChannelColumn.INTERNAL_PROVIDER_DATA ) == null      // 6
+                internalProviderData = if ( cursor.getBlobOrNull(
+                        ChannelColumn.INTERNAL_PROVIDER_DATA
+                    ) == null ) "null" else "[ByteArray]"               // 6
                 networkAffiliation = cursor.getStringOrNull(
                     ChannelColumn.NETWORK_AFFILIATION )                 // 7
                 originalNetworkId = cursor.getIntOrNull(
                     ChannelColumn.ORIGINAL_NETWORK_ID )                 // 8
                 packageName = cursor.getString( ChannelColumn.PACKAGE_NAME )
-                searchable = cursor.getInt( ChannelColumn.SEARCHABLE ) == 1
+                searchable = cursor.getInt( ChannelColumn.SEARCHABLE )  // 9
                 serviceId = cursor.getIntOrNull( ChannelColumn.SERVICE_ID )
                 serviceType = cursor.getString( ChannelColumn.SERVICE_TYPE )
                 transportStreamId = cursor.getIntOrNull(
                     ChannelColumn.TRANSPORT_STREAM_ID )                 // 13
                 type = cursor.getString( ChannelColumn.TYPE )           // 14
                 versionNumber = cursor.getInt( ChannelColumn.VERSION_NUMBER )
-                videoFormat = cursor.getStringOrNull( ChannelColumn.VIDEO_FORMAT )
+                videoFormat = cursor.getStringOrNull(
+                    ChannelColumn.VIDEO_FORMAT )                        // 16
                 appLinkColor = cursor.getInt( ChannelColumn.APP_LINK_COLOR )
                 appLinkIconUri = cursor.getStringOrNull(
                     ChannelColumn.APP_LINK_ICON_URI )                   // 18
@@ -272,11 +278,11 @@ class MainActivity : FragmentActivity()
                     ChannelColumn.INTERNAL_PROVIDER_FLAG3 )             // 24
                 internalProviderFlag4 = cursor.getInt(
                     ChannelColumn.INTERNAL_PROVIDER_FLAG4 )             // 25
-                browsable = cursor.getInt( ChannelColumn.BROWSABLE ) == 1
+                browsable = cursor.getInt( ChannelColumn.BROWSABLE )    // 26
                 internalProviderId = cursor.getStringOrNull(
                     ChannelColumn.INTERNAL_PROVIDER_ID )                // 27
-                locked = cursor.getInt( ChannelColumn.LOCKED ) == 1     // 28
-                transient = cursor.getInt( ChannelColumn.TRANSIENT ) == 1
+                locked = cursor.getInt( ChannelColumn.LOCKED )          // 28
+                transient = cursor.getInt( ChannelColumn.TRANSIENT )    // 29
 
                 channel = Channel( id, description, displayName, displayNumber,
                     inputId, internalProviderData, networkAffiliation,
@@ -292,8 +298,61 @@ class MainActivity : FragmentActivity()
             } // while
         } // contentResolver.query( ...Channels..., ... ).use
 
+        // /storage/emulated/0/
+        val extDir = Environment.getExternalStorageDirectory()
+        val tvDbJson = File( extDir, "tv_db.json" )
+        val tvDbCsv = File( extDir, "tv_db.csv" )
+
+        Log.i( "EpgBrowser", "JSON: adb pull " + tvDbJson.absolutePath )
+        Log.i( "EpgBrowser", "CSV: adb pull " + tvDbCsv.absolutePath )
+
+        FileOutputStream( tvDbJson ).use { fos ->
+
+            fos.write( Gson().toJson( channelList ).toByteArray())
+        } // use
+
+        FileOutputStream( tvDbCsv ).use { fos ->
+
+            fos.write(( "id,description,displayName,displayNumber,inputId,"
+                    + "internalProviderData,networkAffiliation,"
+                    + "originalNetworkId,packageName,searchable,serviceId,"
+                    + "serviceType,transportStreamId,type,versionNumber,"
+                    + "videoFormat,appLinkColor,appLinkIconUri,"
+                    + "appLinkIntentUri,appLinkPosterArtUri,appLinkText,"
+                    + "internalProviderFlag1,internalProviderFlag2,"
+                    + "internalProviderFlag3,internalProviderFlag4,browsable,"
+                    + "internalProviderId,locked,transient\n" ).toByteArray())
+
+            channelList.forEach { ch ->
+
+                val c = ','
+
+                fos.write(( ch.id.toString() + c + ( ch.description ?: "" ) + c
+                        + ( ch.displayName ?: "" ) + c
+                        + ( ch.displayNumber ?: "" ) + c + ch.inputId + c
+                        + ch.internalProviderData + c
+                        + ( ch.networkAffiliation ?: "" ) + c
+                        + ( ch.originalNetworkId ?: "" ) + c + ch.packageName
+                        + c + ch.searchable + c + ( ch.serviceId ?: "" ) + c
+                        + ch.serviceType + c + ( ch.transportStreamId ?: "" )
+                        + c + ch.type + c + ch.versionNumber + c
+                        + ( ch.videoFormat ?: "" ) + c + ch.appLinkColor + c
+                        + ( ch.appLinkIconUri ?: "" ) + c
+                        + ( ch.appLinkIntentUri ?: "" ) + c
+                        + ( ch.appLinkPosterArtUri ?: "" ) + c
+                        + ( ch.appLinkText ?: "" ) + c
+                        + ch.internalProviderFlag1 + c
+                        + ch.internalProviderFlag2 + c
+                        + ch.internalProviderFlag3 + c
+                        + ch.internalProviderFlag4 + c + ch.browsable + c
+                        + ( ch.internalProviderId ?: "" ) + c + ch.locked + c
+                        + ch.transient + "\n" ).toByteArray())
+            } // forEach
+        } // use
+
+        // 頻道號碼排序
         channelList.sort()
 
         return channelList
     } // fun getChannelMap()
-}
+} // class MainActivity
